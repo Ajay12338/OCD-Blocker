@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup
 import requests as r
 import os
+import zipfile
 #  from PIL import Image -> Problem with pillow (ModuleNotFoundError: No module named 'PIL')
 
 #To create a folder called webscraped_images :)
-parent_directory = "C:/Users/bhara/Web Scraping"
+parent_directory = "/Users/ajaysam/Desktop/OCD-Blocker/"
 dir_name = "webscraped_images"
 path = os.path.join(parent_directory,dir_name)
 #  print(path)
@@ -16,15 +17,15 @@ except:
 def fetch_url_download(url:str,img_num) -> str:
         try:
             res =  r.get(url).content
-            fptr = open(f"C:/Users/bhara/Web Scraping/webscraped_images/img{img_num}.jpg",'wb')
+            fptr = open(f"/Users/ajaysam/Desktop/OCD-Blocker/webscraped_images/{img_num}.jpg",'wb')
             fptr.write(res)
             fptr.close()
         except:
             #  print("<Response [404]>")
             pass
         
-        
-url = "https://www.google.com/search?q=cats&rlz=1C1UEAD_enIN1048IN1048&sxsrf=APwXEdd9ifjb9mkg3NRCwgJLcFAPzOYmdA:1682846246312&source=lnms&tbm=isch&sa=X&ved=2ahUKEwib5uPlotH-AhUZcGwGHSPwDk4Q_AUoAXoECAEQAw&biw=1280&bih=648&dpr=1.5"
+ #This is the main url :)       
+url = "https://httpstatusdogs.com/"
 height_of_img = 0
 width_of_img = 0
 dict_of_all_src_set = {}
@@ -55,10 +56,36 @@ for keys in dict_of_all_src_set:
     if url[0:8] == "https://":
          fetch_url_download(url,imgNum)   
     else:
-        url = "	https://" + url
+        url = "https://httpstatusdogs.com/" + url
         fetch_url_download(url,imgNum)
     imgNum += 1
 
+#####################################################################
+# Sending the folder to the server!!!!!!!!!!!!!!!!
+#####################################################################
+#Creating a zip file :))
+folder_name = "./webscraped_images"
+zip_file_name = f"{folder_name}.zip"
+with zipfile.ZipFile(zip_file_name, "w", zipfile.ZIP_DEFLATED) as zip_file:
+    for root, dirs, files in os.walk(folder_name):
+        for file in files:
+            zip_file.write(os.path.join(root, file))
+
+# To send a  POST request to the server :))
+url = ""
+headers = {"Content-Type": "application/zip"}
+files = {"file": open(zip_file_name, "rb")}
+response = r.post(url, headers=headers, files=files)
+
+#  200 -> Ok :)))) else not ok :((((
+if response.status_code == 200:
+    print("Folder uploaded successfully")
+else:
+    print(f"Error uploading folder: {response.text}")
+    
+# Delete the files bro :))))
+os.remove(zip_file_name)
+os.remove("/Users/ajaysam/Desktop/OCD-Blocker/webscraped_images")
 
 
     
